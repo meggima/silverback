@@ -23,6 +23,8 @@ namespace Silverback.Messaging.Broker
 
         private readonly ILogger<Consumer> _logger;
 
+        private readonly ConsumerStatusInfo _statusInfo = new ConsumerStatusInfo();
+
         /// <summary>
         ///     Initializes a new instance of the <see cref="Consumer" /> class.
         /// </summary>
@@ -79,6 +81,9 @@ namespace Silverback.Messaging.Broker
         /// <inheritdoc cref="IConsumer.IsConnected" />
         public bool IsConnected { get; private set; }
 
+        /// <inheritdoc cref="IConsumer.StatusInfo" />
+        public IConsumerStatusInfo StatusInfo => _statusInfo;
+
         /// <inheritdoc cref="IConsumer.Commit(IOffset)" />
         public Task Commit(IOffset offset) => Commit(new[] { offset });
 
@@ -100,6 +105,7 @@ namespace Silverback.Messaging.Broker
             ConnectCore();
 
             IsConnected = true;
+            _statusInfo.SetConnected();
 
             _logger.LogDebug(EventIds.ConsumerConnected, "Connected consumer to topic {topic}.", Endpoint.Name);
         }
@@ -113,6 +119,7 @@ namespace Silverback.Messaging.Broker
             DisconnectCore();
 
             IsConnected = false;
+            _statusInfo.SetDisconnected();
 
             _logger.LogDebug(EventIds.ConsumerDisconnected, "Disconnected consumer from topic {topic}.", Endpoint.Name);
         }
@@ -159,7 +166,10 @@ namespace Silverback.Messaging.Broker
             byte[]? message,
             IReadOnlyCollection<MessageHeader> headers,
             string sourceEndpointName,
-            IOffset? offset) =>
+            IOffset? offset)
+        {
+            _statusInfo.RecordConsumedMessage(offset);
+
             await ExecutePipeline(
                 Behaviors,
                 new ConsumerPipelineContext(
@@ -169,6 +179,7 @@ namespace Silverback.Messaging.Broker
                     },
                     this),
                 _serviceProvider);
+        }
 
         /// <summary>
         ///     Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged

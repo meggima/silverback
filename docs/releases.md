@@ -15,6 +15,7 @@ uid: releases
 * Replace Newtonsoft.Json with System.Text.Json to improve serialization and deserialization performance
 * Upgrade to [Confluent.Kafka 1.4.4](https://github.com/confluentinc/confluent-kafka-dotnet/releases/tag/v1.4.4)
 * Upgrade to [RabbitMQ.Client 6.1.0](https://github.com/rabbitmq/rabbitmq-dotnet-client/releases/tag/v6.1.0)
+* Consumer status information and statistics (see <xref:message-broker#consumer-management-api>)
 
 ### Fixes
 
